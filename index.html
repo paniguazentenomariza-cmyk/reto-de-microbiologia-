@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RETO DE MICROBIOLOGÍA</title>
+<style>
+:root{--bg:#090d22;--panel:#151d3d;--cyan:#55e6ff;--purple:#a78bfa;--red:#ff5577;--blue:#4d9cff}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#f4f6ff;background:radial-gradient(circle at top,#20275a,#090d22 65%);min-height:100vh}
+main{max-width:980px;margin:auto;padding:24px}.hero{text-align:center;padding:25px 12px}.orb{font-size:58px}.tag{color:var(--cyan);letter-spacing:3px;font-weight:bold}.card{background:#151d3deF;border:1px solid #46518a;border-radius:18px;padding:20px;margin:14px 0;box-shadow:0 12px 30px #0005}
+h1{font-size:clamp(30px,6vw,52px);margin:8px 0;color:white;text-shadow:0 0 20px #7c5cff}h2{color:var(--cyan);margin-top:0}
+button,input,select{font:inherit;border-radius:10px;padding:12px;border:1px solid #59669d}input,select{background:#0b1230;color:white;width:100%;margin:6px 0}button{background:linear-gradient(90deg,#6956df,#258bc9);color:white;font-weight:bold;cursor:pointer;margin:5px 4px 5px 0;border:0}button:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1;min-width:180px}.hidden{display:none}.muted{color:#b9c4e9}.teams{display:grid;grid-template-columns:1fr 1fr;gap:12px}.team{padding:12px;border-radius:12px;background:#0d1734}.red{border:1px solid var(--red)}.blue{border:1px solid var(--blue)}.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}.answers button{min-height:58px;background:#28345f}.status{padding:10px;background:#0b1230;border-radius:10px;overflow-wrap:anywhere}
+@media(max-width:560px){main{padding:14px}.answers{grid-template-columns:1fr}.teams{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main>
+<header class="hero"><div class="orb">🧫🤖</div><div class="tag">LABORATORIO INTERACTIVO</div><h1>RETO DE MICROBIOLOGÍA</h1><p class="muted">¡Demuestra lo que sabes y conquista el laboratorio!</p></header>
+<section id="home" class="card">
+<h2>Entrar al concurso</h2><div class="row"><div><label>Tu nombre</label><input id="playerName" maxlength="18" placeholder="Escribe tu nombre"></div><div><label>Código de sala</label><input id="roomCode" maxlength="6" placeholder="Ej. A7K2Q"></div></div>
+<div class="row"><button id="createBtn">Crear sala (anfitrión)</button><button id="joinBtn">Unirme como jugador</button><button id="watchBtn">Entrar como espectador</button></div>
+<p id="homeMsg" class="status muted">Conecta con el servidor para crear o entrar a una sala.</p>
+</section>
+<section id="lobby" class="card hidden">
+<h2>🧪 Sala <span id="codeLabel"></span></h2><p class="muted">Comparte este código con tus compañeras.</p><div class="teams"><div class="team red"><b>🔴 Equipo rojo</b><div id="redList">—</div></div><div class="team blue"><b>🔵 Equipo azul</b><div id="blueList">—</div></div></div>
+<p>Espectadores: <b id="spectators">0</b> · Participantes: <b id="players">0/6</b></p><p id="lobbyMsg" class="status">Esperando participantes…</p><button id="startBtn" class="hidden">Comenzar concurso</button>
+</section>
+<section id="game" class="card hidden">
+<div class="row"><div><h2>Pregunta <span id="qNum">1</span>/30</h2></div><div style="text-align:right">⏱️ <b id="timer">10</b> s</div></div>
+<p id="question" style="font-size:20px;font-weight:bold"></p><p id="imageHint" class="muted">Observa la imagen o pista del microorganismo.</p><div id="answers" class="answers"></div><p id="gameMsg" class="status"></p><h2>Marcador</h2><div class="teams"><div class="team red">🔴 Rojo: <b id="redScore">0</b></div><div class="team blue">🔵 Azul: <b id="blueScore">0</b></div></div>
+</section>
+<section id="end" class="card hidden"><h2>🏆 Resultado final</h2><p id="winner"></p><button onclick="location.reload()">Volver al inicio</button></section>
+<footer class="hero muted">RETO DE MICROBIOLOGÍA · Aprende, participa y descubre</footer>
+</main>
+<script src="/socket.io/socket.io.js"></script><script>
+const socket=io(); let room="",role="",team="",timerHandle=null;
+const $=id=>document.getElementById(id);
+function show(id){["home","lobby","game","end"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
+function msg(t){$("homeMsg").textContent=t}
+$("createBtn").onclick=()=>{role="host";socket.emit("createRoom",{name:$("playerName").value.trim()||"Anfitriona"})};
+$("joinBtn").onclick=()=>{role="player";socket.emit("joinRoom",{code:$("roomCode").value.trim().toUpperCase(),name:$("playerName").value.trim()||"Jugadora",role})};
+$("watchBtn").onclick=()=>{role="spectator";socket.emit("joinRoom",{code:$("roomCode").value.trim().toUpperCase(),name:$("playerName").value.trim()||"Espectadora",role})};
+$("startBtn").onclick=()=>socket.emit("startGame",{code:room});
+socket.on("connect",()=>msg("Conectada al servidor. Puedes crear una sala o unirte con un código."));
+socket.on("connect_error",()=>msg("No se pudo conectar al servidor. Comprueba que el proyecto esté ejecutándose."));
+socket.on("errorMsg",m=>msg(m));
+socket.on("roomCreated",d=>{room=d.code;$("codeLabel").textContent=room;$("lobbyMsg").textContent="Eres la anfitriona. Espera a tus participantes.";$("startBtn").classList.remove("hidden");show("lobby")});
+socket.on("joined",d=>{room=d.code;$("codeLabel").textContent=room;show("lobby")});
+socket.on("roomUpdate",d=>{if(d.code){room=d.code;$("codeLabel").textContent=room} $("redList").textContent=d.red.join(", ")||"—";$("blueList").textContent=d.blue.join(", ")||"—";$("players").textContent=d.playerCount+"/6";$("spectators").textContent=d.spectatorCount;$("lobbyMsg").textContent=d.started?"Concurso en curso":"Esperando participantes…";if(d.started)show("game")});
+socket.on("question",d=>{show("game");$("qNum").textContent=d.number;$("question").textContent=d.text;$("imageHint").textContent=d.image?"Imagen/pista: "+d.image:"Observa la descripción";$("timer").textContent=d.seconds;$("gameMsg").textContent="¡Responde!";$("answers").innerHTML="";d.options.forEach((o,i)=>{let b=document.createElement("button");b.textContent=String.fromCharCode(65+i)+". "+o;b.onclick=()=>{socket.emit("answer",{code:room,index:i});[...$("answers").children].forEach(x=>x.disabled=true)};$("answers").appendChild(b)});});
+socket.on("tick",n=>$("timer").textContent=n);
+socket.on("answerResult",d=>{$("gameMsg").textContent=d.message});
+socket.on("score",d=>{$("redScore").textContent=d.red;$("blueScore").textContent=d.blue});
+socket.on("finished",d=>{show("end");$("winner").textContent=d.winner+" · Rojo "+d.red+" puntos / Azul "+d.blue+" puntos"});
+</script></body></html>

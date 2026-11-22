@@ -1,0 +1,35 @@
+RETO DE MICROBIOLOGÍA - PROYECTO INICIAL
+
+QUÉ INCLUYE
+- Pantalla inicial.
+- Creación de sala con código.
+- Entrada como jugador o espectador.
+- Equipos rojo y azul.
+- Preguntas de demostración, cuenta regresiva y puntos.
+- Comunicación en tiempo real mediante Socket.IO.
+
+IMPORTANTE
+Este es un prototipo inicial para continuar desarrollando y probar. No está publicado en internet todavía.
+Por ahora incluye 10 preguntas de demostración, no las 30 preguntas finales.
+El servidor mantiene las salas en memoria; si se reinicia, las salas se pierden.
+No compartas contraseñas ni claves privadas.
+
+CÓMO EJECUTAR EN WINDOWS
+1. Instala Node.js LTS desde https://nodejs.org/
+2. Abre esta carpeta en Visual Studio Code.
+3. En VS Code abre Terminal > New Terminal.
+4. Escribe: npm install
+5. Cuando termine, escribe: npm start
+6. En Chrome abre: http://localhost:3000
+
+Para que tus compañeras se conecten desde otros lugares, falta desplegar este servidor en un servicio de hosting compatible. Abrir localhost solo funciona en tu propia computadora.
+
+
+SUBIR EL PROYECTO A GITHUB
+1. Entra a https://github.com e inicia sesion.
+2. Crea un repositorio nuevo llamado reto-de-microbiologia.
+3. Sube el contenido de esta carpeta al repositorio (Add file > Upload files).
+4. Pulsa Commit changes.
+
+IMPORTANTE SOBRE PUBLICACION Y MULTIJUGADOR
+Este proyecto incluye un servidor Node.js y Socket.IO. GitHub puede guardar el codigo, pero GitHub Pages no ejecuta server.js ni ofrece el servidor multijugador. Para que varias companeras jueguen juntas, habra que desplegar el servidor en un hosting compatible y conectar la pagina a ese servidor. El prototipo actual tiene 10 preguntas de demostracion, no las 30 definitivas. No compartas este enlace como juego multijugador hasta desplegar y probar el servidor.
