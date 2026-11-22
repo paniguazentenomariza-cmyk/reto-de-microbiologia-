@@ -4,6 +4,8 @@ const { Server } = require("socket.io");
 const crypto = require("crypto");
 const app = express(), server = http.createServer(app), io = new Server(server);
 app.use(express.static("public"));
+// El archivo index.html está en la raíz del repositorio.
+app.get("/", (req, res) => res.sendFile(require("path").join(__dirname, "index.html")));
 const rooms = new Map();
 const bank = [
 ["¿Qué instrumento permite observar microorganismos que no se ven a simple vista?","Microscopio","Telescopio","Brújula","Termómetro",0,"Microscopía"],
